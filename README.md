@@ -17,18 +17,16 @@ todo: make pip package
 >>>
 >>> class Songs(pyty.Schema):
 >>>   name:       str
->>>   explicit:   bool
 >>>   popularity: int
 >>>
->>> @endpoint.GET('get_artists', api, '/artists/top')
+>>> @endpoint.GET('get_top_artists', api, '/artists/top')
 >>> class Artist(pyty.Schema):
->>>   id:     int
 >>>   name:   str
 >>>   genres: List[str]
 >>>   tracks: List[Song] = 'alias'   |IS| 'songs' \
 >>>                    and 'default' |IS| []
 >>>
->>> for artist in Artist.fetch_all():
+>>> for artist in Artist.get_top_artists(): # func name get_top_artists set in endpoint decorator
 >>>   for song in artist.songs: # note that JSON key 'tracks' gets renamed as 'songs'
 >>>     print(song.name,  song.explicit, song.popularity)
 ```
