@@ -1,0 +1,6 @@
+.graveyard
+.env
+__pycache__/
+.DS_STORE
+*.pyc
+notes.txt
