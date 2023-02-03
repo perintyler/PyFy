@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
-
 """
-pyty.schema
-~~~~~~~~~~~
+  PyObjectValidation.schema
+  ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This module provides Schema
 """
@@ -10,11 +8,13 @@ This module provides Schema
 from typing import List, Dict, TypeVar, Generic, Callable
 from abc import ABCMeta as AbstractClass
 
-from .utils import *
-from .exceptions import *
+from .exceptions import ConstraintException, EncodeException
 
-CONSTRAINT_KEYWORDS = ['default', 'required', 'range', 'max-size', 'path'
-                       'min-size', 'length', 'alias', 'endpoint']
+CONSTRAINT_KEYWORDS = [
+  'default'  , 'required' , 'range', 
+  'max-size' , 'path'     , 'min-size', 
+  'length'   , 'alias'    , 'endpoint'
+]
 
 def encode(cls, data):
   """Build Object
@@ -71,7 +71,7 @@ def decode(schema):
   """
   if type(schema) in (int, float, bool, str, list):
     return schema
-  return map(collapse_object, schema.attributes().values())
+  return list(map(collapse_object, schema.attributes().values()))
 
 class Attribute:
 
@@ -125,6 +125,35 @@ class Constraint:
   def __repr__(self):
     return f'<Constraints keyword={self.keyword} condition={self.condition}>'
 
+
+class LinkedListNode:
+
+  def __init__(self):
+    self.prev = None
+    self.next = None
+
+  def chain(self, node):
+    self.next = node
+    node.prev = self
+
+class LinkedList(LinkedListNode):
+
+  @property
+  def head(self):
+    node = self
+    while node.prev is not None:
+      node = node.prev
+    return node
+
+  def __iter__(self):
+    node = self.head
+    while node:
+      yield node
+      node = node.next
+
+  def as_list(self):
+    return list(iter(self))
+
 class ConstraintChain(Constraint, LinkedList):
 
   def __and__(self, other):
@@ -151,7 +180,7 @@ class ConstraintBuilder(object):
 
   def __ror__(self, keyword):
     if not isinstance(keyword, str) or keyword not in Constraint.KEYWORDS:
-      raise ConstraintOperator('Invalid left side')
+      raise ConstraintException('Invalid left side')
     partialFunc = partial(self.operator, keyword)
     return ConstraintBuilder(partialFunc)
 
@@ -163,3 +192,4 @@ class IS:
   """Special operator used to define constraints"""
   def __call__(keyword, condition):
     return ConstraintChain(keyword, condition)
+
