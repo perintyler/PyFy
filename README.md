@@ -54,3 +54,31 @@ The available keywords are:
 - max-size
 - min-size
 - length
+
+## API Support
+
+I think this would be cool. 
+
+```
+>>> from pyty import Schema, Api, IS, List
+>>>
+>>> api = pyty.Api('<API-URI>')
+>>> api.request_token('<CLIENT-ID>', '<SECRET-KEY>', authUrl = AUTH_URL)
+>>>
+>>> class Songs(pyty.Schema):
+>>>   name:       str
+>>>   popularity: int
+>>>
+>>> @endpoint.GET('get_top_artists', api, '/artists/top')
+>>> class Artist(pyty.Schema):
+>>>   name:   str
+>>>   genres: List[str]
+>>>   tracks: List[Song] = 'alias'   |IS| 'songs' \
+>>>                    and 'default' |IS| []
+>>>
+>>> for artist in Artist.get_top_artists(): # func name get_top_artists set in endpoint decorator
+>>>   for song in artist.songs: # note that JSON key 'tracks' gets renamed as 'songs'
+>>>     print(song.name,  song.explicit, song.popularity)
+```
+
+
