@@ -1,10 +1,5 @@
 # PyTy
 
-PyTy is a library that provides support for interacting with APIs by offering a quick and easy way to create objects that represent data from an API endpoint. Type safety is a feature and encodable schemas can be defined to validate REST responses.
-
-## Installing
-
-
 ## Object Encoding
 
 Schemas can be defined to build objects from raw JSON data. To do so, subclass `pyty.Schema`. Here's a simple example:
