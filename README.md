@@ -1,5 +1,7 @@
 # PyObjectValidation
 
+This Python package makes use of [Type Hints](https://docs.python.org/3/library/typing.html) to define object schemas that can be encoded and decoded.
+
 ## Installation 
 
 ```console
