@@ -8,13 +8,10 @@ This module provides Schema
 from typing import List, Dict, TypeVar, Generic, Callable
 from abc import ABCMeta as AbstractClass
 
-from .exceptions import ConstraintException, EncodeException
+from .exceptions import EncodeException
 
-CONSTRAINT_KEYWORDS = [
-  'default'  , 'required' , 'range', 
-  'max-size' , 'path'     , 'min-size', 
-  'length'   , 'alias'    , 'endpoint'
-]
+class EncodeException(Exception):
+    """Schema does not match the data"""
 
 def encode(cls, data):
   """Build Object
@@ -41,12 +38,11 @@ def encode(cls, data):
     if required and attrName not in data:
       raise EncodeException(f'{attrName} not in data')
     elif attrName not in data or data[attrName] is None:
-      continue
+      attribute = None
     elif type(data[attrName]) != attrType:
       raise TypeError
-
     # encode the values of the attributes
-    if attrType in (int, float, str, bool):
+    elif attrType in (int, float, str, bool):
       attribute = attrType(data[attrName])
     elif attrType is list:
       attribute = [encode(type(el), el) for el in data[attrName]]
@@ -71,22 +67,8 @@ def decode(schema):
   """
   if type(schema) in (int, float, bool, str, list):
     return schema
-  return list(map(collapse_object, schema.attributes().values()))
-
-class Attribute:
-
-  def __init__(self, name, value):
-    self.name = name
-    self.value = value
-    self.constraints = {}
-
-  def add_constraint(self, constraint):
-    if not constraint.validate():
-      raise ConstraintException('Invalid Constraint')
-    self.constraints[constraint.keyword] = constraint
-
-  def is_optional():
-    return 'required' in self.constraint.keys()
+  else:
+    return {name: decode(value) for name, value in schema.attributes().items()}
 
 class Schema(metaclass=AbstractClass):
   """Schema support for attributes, types, and constraints"""
@@ -109,87 +91,3 @@ class Schema(metaclass=AbstractClass):
 
   def attributes(self):
     return self.__dict__
-
-class Constraint:
-
-  KEYWORDS = ['default', 'required', 'range', 'max-size', 'path'
-              'min-size', 'length', 'alias', 'endpoint']
-
-  def __init__(self, keyword: str, condition: any):
-    if keyword not in CONSTRAINT_KEYWORDS:
-      print(keyword, condition)
-      raise ConstraintException()
-    self.keyword = keyword
-    self.condition = condition
-
-  def __repr__(self):
-    return f'<Constraints keyword={self.keyword} condition={self.condition}>'
-
-
-class LinkedListNode:
-
-  def __init__(self):
-    self.prev = None
-    self.next = None
-
-  def chain(self, node):
-    self.next = node
-    node.prev = self
-
-class LinkedList(LinkedListNode):
-
-  @property
-  def head(self):
-    node = self
-    while node.prev is not None:
-      node = node.prev
-    return node
-
-  def __iter__(self):
-    node = self.head
-    while node:
-      yield node
-      node = node.next
-
-  def as_list(self):
-    return list(iter(self))
-
-class ConstraintChain(Constraint, LinkedList):
-
-  def __and__(self, other):
-    if not isinstance(other, ConstraintChain):
-      raise ConstraintException()
-    self.chain(other)
-
-class ConstraintBuilder(object):
-  """Constraint Operator Decoration
-
-  I can't believe this works... Usage:
-  >>> @ConstraintSymbol
-  >>> def EQUAL(a, b) -> Constraint:
-  >>>   return a == b
-  >>> print(2 |EQUAL| 3) # False
-  """
-
-  def __init__(self, operator: Callable):
-    self.operator = operator
-
-  def __or__(self, condition):
-    # TODO: figure out best way to validate that the condition type fits the keyword
-    return self.operator(condition)
-
-  def __ror__(self, keyword):
-    if not isinstance(keyword, str) or keyword not in Constraint.KEYWORDS:
-      raise ConstraintException('Invalid left side')
-    partialFunc = partial(self.operator, keyword)
-    return ConstraintBuilder(partialFunc)
-
-  def __call__(self, keyword, condition):
-    return self.operator(keyword, condition)
-
-@ConstraintBuilder
-class IS:
-  """Special operator used to define constraints"""
-  def __call__(keyword, condition):
-    return ConstraintChain(keyword, condition)
-
