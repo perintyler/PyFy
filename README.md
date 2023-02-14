@@ -16,18 +16,18 @@ Schemas can be defined to build objects from raw JSON data. Properties defined i
 >>> from object_validation import Schema
 >>>
 >>> class User(Schema):
->>>   name: str
+>>>   name: str = 'required'
 >>>   age:  int
 >>>
 >>> class Group(Schema):
 >>>   title:   str
 >>>   creator: User
 >>>   msg_set: List[str]
->>>
 ```
 
 ### Encoding
 
+If invalid types are provided to the `encode` function, an `EncodingException` will be raised.
 
 ```python
 >>> from object_validation import encode 
