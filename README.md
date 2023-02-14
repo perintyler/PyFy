@@ -6,12 +6,12 @@
 pip install ./PyObjectValidation
 ```
 
-## Object Encoding
+## Schemas
 
-Schemas can be defined to build objects from raw JSON data. To do so, subclass `pyty.Schema`. Here's a simple example:
+Schemas can be defined to build objects from raw JSON data. Properties defined in the schema can be instances of `Schema`, allowing for nested objects.
 
-```console
->>> from pyty import Schema, encode, List
+```python
+>>> from object_validation import Schema
 >>>
 >>> class User(Schema):
 >>>   name: str
@@ -21,6 +21,14 @@ Schemas can be defined to build objects from raw JSON data. To do so, subclass `
 >>>   title:   str
 >>>   creator: User
 >>>   msg_set: List[str]
+>>>
+```
+
+### Encoding
+
+
+```python
+>>> from object_validation import encode 
 >>>
 >>> group = encode({
 >>>   'title': 'Revolution?',
@@ -32,4 +40,12 @@ Schemas can be defined to build objects from raw JSON data. To do so, subclass `
 'Revolution?'
 >>> group.creator
 <User name='George Washington' age=23>
+```
+
+## Decoding
+
+```python
+>>> from object_validation import decode
+>>> decode(User('George Washington', 23))
+{'name': 'George Washington', 'age': 23}
 ```
