@@ -1,9 +1,4 @@
-"""
-  PyObjectValidation.schema
-  ~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This module provides Schema
-"""
+"""schema.py"""
 
 from typing import List, Dict, TypeVar, Generic, Callable
 from abc import ABCMeta as AbstractClass
